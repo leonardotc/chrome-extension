@@ -1,107 +1,108 @@
-import React from 'react';
-import { Link } from 'react-router';
-import moment from 'moment';
-import 'moment-duration-format';
+import React from 'react'
+import { Link } from 'react-router'
+import moment from 'moment'
+import 'moment-duration-format'
 
-import style from './style.css';
-import request from '../AuthInterceptor';
-import LoadingIcon from '../LoadingIcon';
-import PopupHeader from '../PopupHeader';
-import PopupNav from '../PopupNav';
-import TaskDetail from '../TaskDetail';
+import style from './style.css'
+import request from '../AuthInterceptor'
+import LoadingIcon from '../LoadingIcon'
+import PopupHeader from '../PopupHeader'
+import PopupNav from '../PopupNav'
+import TaskDetail from '../TaskDetail'
+
+const baseUrl = 'https://runrun.it'
 
 class OpenedTasksPage extends React.Component {
   constructor(props) {
-    super(props);
-    parent = this;
+    super(props)
+    parent = this
     
     this.state = {
       tasks: undefined,
       trackedTask: localStorage.getItem("trackedTask"),
       autoPauseResume: (localStorage.getItem("autoPauseResume") && localStorage.getItem("autoPauseResume") === "true") ? true : false,
       taskExpanded: undefined
-    };
+    }
     
-    this.handleTaskDetailToggle = this.handleTaskDetailToggle.bind(this);
-    this.handleSetList = this.handleSetList.bind(this);
-    this.handleGetList = this.handleGetList.bind(this);
-    this.handlePlay = this.handlePlay.bind(this);
-    this.handlePause = this.handlePause.bind(this);
-    this.handleTaskTracking = this.handleTaskTracking.bind(this);
+    this.handleTaskDetailToggle = this.handleTaskDetailToggle.bind(this)
+    this.handleSetList = this.handleSetList.bind(this)
+    this.handleGetList = this.handleGetList.bind(this)
+    this.handlePlay = this.handlePlay.bind(this)
+    this.handlePause = this.handlePause.bind(this)
+    this.handleTaskTracking = this.handleTaskTracking.bind(this)
 
-    chrome.runtime.onMessage.addListener((msg) => {
-      if(msg.subject === "taskUpdated")
-        parent.handleSetList(msg.body);
-    });
+    chrome.runtime.onMessage.addListener(msg => {
+      if(msg.subject === "taskUpdated") parent.handleSetList(body)
+    })
   }
 
   componentDidMount() {
-    this.handleGetList();
+    this.handleGetList()
   }
 
   handleTaskDetailToggle(id) {
     return () => {
       this.setState({
         taskExpanded: (this.state.taskExpanded === id) ? undefined : id
-      });
-    };
+      })
+    }
   }
 
   handlePlay(id) {
     return () => {
-      request.post(`https://secure.runrun.it/api/v1.0/tasks/${id}/play`)
+      request.post(`${baseUrl}/api/v1.0/tasks/${id}/play`)
         .then(response => {
-          this.handleGetList();
-        });
-    };
+          this.handleGetList()
+        })
+    }
   }
 
   handlePause(id) {
     return () => {
-      localStorage.setItem("trackedTask", "");
-      request.post(`https://secure.runrun.it/api/v1.0/tasks/${id}/pause`)
+      localStorage.setItem("trackedTask", "")
+      request.post(`${baseUrl}/api/v1.0/tasks/${id}/pause`)
         .then(response => {
-          this.handleGetList();
-        });
-    };
+          this.handleGetList()
+        })
+    }
   }
 
   handleClose(id) {
     return () => {
-      request.post(`https://secure.runrun.it/api/v1.0/tasks/${id}/close`)
+      request.post(`${baseUrl}/api/v1.0/tasks/${id}/close`)
         .then(response => {
-          this.handleGetList();
-        });
-    };
+          this.handleGetList()
+        })
+    }
   }
 
   handleSetList(tasks) {
     this.setState({
       tasks,
       trackedTask: localStorage.getItem("trackedTask")
-    });
+    })
   }
 
   handleGetList() {
     chrome.runtime.sendMessage({
       subject: "taskUpdateRequest"
-    });
+    })
   }
 
   handleTaskTracking(id) {
     return () => {
       if(localStorage.getItem("trackedTask") && localStorage.getItem("trackedTask") == id)
-        localStorage.setItem("trackedTask", "");
+        localStorage.setItem("trackedTask", "")
       else
-        localStorage.setItem("trackedTask", id);
+        localStorage.setItem("trackedTask", id)
       this.setState({
         trackedTask: localStorage.getItem("trackedTask")
-      });
-    };
+      })
+    }
   }
 
   render() {
-    const timer = (seconds) => moment.duration(seconds, 'seconds').format('HH:mm', {trim:false});
+    const timer = (seconds) => moment.duration(seconds, 'seconds').format('HH:mm', {trim:false})
     
     const tasks = (() => {
       if(!localStorage.getItem("appkey"))
@@ -110,21 +111,21 @@ class OpenedTasksPage extends React.Component {
             Welcome to Runrun.it Task Manager!<br />
             Click <a href="options.html" target="_blank">here</a> to set up your Runrun.it account.
           </li>
-        );
+        )
       else if(this.state.tasks === undefined)
         return (
           <li className="text-center"><LoadingIcon visible={true} /></li>
-        );
+        )
       else if(this.state.tasks instanceof Array && this.state.tasks.length === 0)
         return (
           <li className="text-center">
             You have no task at the moment.
           </li>
-        );
+        )
       else
         return this.state.tasks.map((task, index) => (
           <li key={index} className="list-group-item">
-            <a href={`https://secure.runrun.it/tasks/${task.id}`} target="_blank">{task.id} - {task.title}</a>
+            <a href={`${baseUrl}/tasks/${task.id}`} target="_blank">{task.id} - {task.title}</a>
             <div className="text-size-sm pb-1">
               {task.client_name} > {task.project_name} - {task.type_name} <button  type="button" className="btn btn-secondary btn-xs" onClick={this.handleTaskDetailToggle(task.id)}> {
                 (this.state.taskExpanded === task.id) ? (
@@ -163,8 +164,8 @@ class OpenedTasksPage extends React.Component {
     
             </div>
           </li>
-        ));
-    })();
+        ))
+    })()
 
     return (
       <div>
@@ -176,8 +177,8 @@ class OpenedTasksPage extends React.Component {
           {tasks}
         </ul>
       </div>
-    );
+    )
   }
 }
 
-export default OpenedTasksPage;
+export default OpenedTasksPage
