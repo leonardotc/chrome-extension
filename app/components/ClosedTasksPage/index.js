@@ -1,37 +1,38 @@
-import React from 'react'
-import { Link } from 'react-router'
-import moment from 'moment'
-import 'moment-duration-format'
-import _ from 'lodash'
+import React from 'react';
+import { Link } from 'react-router';
+import moment from 'moment';
+import 'moment-duration-format';
 
-import style from './style.css'
-import request from '../AuthInterceptor'
-import LoadingIcon from '../LoadingIcon'
-import PopupHeader from '../PopupHeader'
-import PopupNav from '../PopupNav'
-import TaskDetail from '../TaskDetail'
+import style from './style.css';
+import request from '../AuthInterceptor';
+import LoadingIcon from '../LoadingIcon';
+import PopupHeader from '../PopupHeader';
+import PopupNav from '../PopupNav';
+import TaskDetail from '../TaskDetail';
 
 class ClosedTasksPage extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     
-    this.setState({
+    this.state = {
       tasks: undefined,
       taskExpanded: undefined
-    })
+    };
     
-    _.bindAll('handleTaskDetailToggle', 'handleGetList', 'handleReopen')
+    this.handleTaskDetailToggle = this.handleTaskDetailToggle.bind(this);
+    this.handleGetList = this.handleGetList.bind(this);
+    this.handleReopen = this.handleReopen.bind(this);
   }
 
   componentDidMount() {
-    this.handleGetList()
+    this.handleGetList();
   }
 
   handleGetList() {
     this.setState({
       tasks: undefined
     }, () => {
-      const user = (localStorage.getItem("user")) ? JSON.parse(localStorage.getItem("user")) : {}
+      const user = (localStorage.getItem("user")) ? JSON.parse(localStorage.getItem("user")) : {};
       request.get('https://secure.runrun.it/api/v1.0/tasks', {
         params: {
           responsible_id: user.id,
@@ -42,95 +43,117 @@ class ClosedTasksPage extends React.Component {
       .then(response => {
         this.setState({
           tasks: response.data
-        })
-      })
-    })
+        });
+      });
+    });
   }
 
   handleReopen(id) {
     return () => {
       request.post(`https://secure.runrun.it/api/v1.0/tasks/${id}/reopen`)
         .then(response => {
-          this.handleGetList()
-        })
-    }
+          this.handleGetList();
+        });
+    };
   }
 
   handleTaskDetailToggle(id) {
     return () => {
       this.setState({
-        taskExpanded: this.state.taskExpanded === id ? undefined : id
-      })
-    }
+        taskExpanded: (this.state.taskExpanded === id) ? undefined : id
+      });
+    };
+  }
+
+  returnTaskProgress(task) {
+    const progress = task.time_worked / task.current_estimate_seconds * 300;
+    const maxProgress = (progress >= 300) ? 300 : progress
+    return maxProgress
   }
 
   render() {
-    const timer = seconds => moment.duration(seconds, 'seconds').format('HH:mm', { trim:false })
+    const timer = (seconds) => moment.duration(seconds, 'seconds').format('HH:mm', {trim:false});
 
     const tasks = (() => {
       if(!localStorage.getItem("appkey"))
         return (
-          <li className="text-center">
-            Welcome to Runrun.it Task Manager!<br />
-            Click <a href="options.html" target="_blank">here</a> to set up your Runrun.it account.
-          </li>
-        )
+          <div className="cover-page">
+            <a className="cover-page-button btn btn-block" href="options.html" target="_blank">Settings Access</a>
+          </div>
+        );
       else if(this.state.tasks === undefined)
         return (
-          <li className="text-center"><LoadingIcon visible={true} /></li>
-        )
+          <p className="text-center"><LoadingIcon visible={true} /></p>
+        );
       else if(this.state.tasks instanceof Array && this.state.tasks.length === 0)
         return (
-          <li className="text-center">
-            You don't have closed tasks at the moment.
-          </li>
-        )
+          <p className="text-center">
+            Não tem nenhuma tarefa.
+          </p>
+        );
       else
         return this.state.tasks.map((task, index) => (
-          <li key={index} className="list-group-item">
-            <a href={`https://secure.runrun.it/tasks/${task.id}`} target="_blank">{task.id} - {task.title}</a>
-            <div className="text-size-sm pb-1">
-              {task.client_name} > {task.project_name} - {task.type_name} <button  type="button" className="btn btn-secondary btn-xs" onClick={this.handleTaskDetailToggle(task.id)}> {
-                (this.state.taskExpanded === task.id) ? (
-                    <span data-glyph="minus" className="oi"></span>
-                ) : (
-                  <span data-glyph="plus" className="oi"></span>
-                )
-              } </button>
-              {(this.state.taskExpanded === task.id) ? (
-                <TaskDetail task={task} />
-              ) : ""}
-            </div>
-            <div>
-              <button type="button" className={`btn btn-${(task.current_estimate_seconds != 0 && task.time_worked > task.current_estimate_seconds)?'danger':'info'} btn-sm nohover`}>
-                <span data-glyph="timer" className="oi"></span> {
-                  timer(task.time_worked)
-                } {
-                  (task.current_estimate_seconds) ? 
-                  '/ ' + timer(task.current_estimate_seconds) : ""
-                }
-              </button> <button type="button" className="btn btn-sm btn-primary" onClick={this.handleReopen(task.id)}>REOPEN</button>
-            </div>
-          </li>
-        ))
-    })()
+          <div className={style.RunrunTasksList}>
+            <ul className={`list-group ${style.OpenedTasksPage}`}>
+              <li key={index}>
+                <div onClick={this.handleTaskDetailToggle(task.id)} className={style.RunrunItem__area}>
+                  <span className={style.RunrunItem__id}>ID {task.id}</span>
+                  <span className={style.RunrunItem__name}>{task.title} - {task.project_name}</span>
+                </div>
+                <div className={`area-enabled-true`}>
+                  <span className={style.RunrunItem__actionBtn} onClick={this.handleReopen(task.id)} title="Reopen"></span>
+                  <span className={style.RunrunItem__completeBtn} title="Task complete"><img src="/images/check_green_filled.svg" /></span>
+                  {
+                    (task.on_going) ?
+                      (
+                        <div className={style.RunrunItem__progressDiv}>
+                          <span className={style.RunrunItem__progressTime}>
+                            ONGOING
+                      </span>
+                          <a href={`https://secure.runrun.it/tasks/${task.id}`} target="_blank" title="Check the task at the website" className={style.RunrunItem__progressLink}><span data-glyph="external-link" className="oi"></span></a>
+                          <span className={style.RunrunItem__progressBar}></span>
+                        </div>
+                      ) : (
+                        <div className={style.RunrunItem__progressDiv}>
+                          <span className={style.RunrunItem__progressTime}>
+                            {
+                              timer(task.time_worked)
+                            } {
+                              (task.current_estimate_seconds) ? '/ ' + timer(task.current_estimate_seconds) : ""
+                            }
+                          </span>
+                          <a href={`https://secure.runrun.it/tasks/${task.id}`} target="_blank" title="Check the task at the website" className={style.RunrunItem__progressLink}><span data-glyph="external-link" className="oi"></span></a>
+                          <span className={style.RunrunItem__progressBar}></span>
+                          <span className={style.RunrunItem__progressFilledBar} style={{ 'width': this.returnTaskProgress(task) + 'px', 'backgroundColor': (this.returnTaskProgress(task) >= 180) ? '#F77122' : '#38B927' }}></span>
+                        </div>
+                      )
+                  }
+                </div>
+                <div>
+                  {(this.state.taskExpanded === task.id) ? (
+                    <TaskDetail task={task} />
+                  ) : ""}
+                </div>
+              </li>
+            </ul>
+          </div>
+        ));
+    })();
 
     return (
       <div>
         <div>
-          <PopupHeader title="Tasks" />
-          <PopupNav />
+          <PopupHeader title="Tasks (Last 10 Deliveries)" />
+          <PopupNav routeName="closed" />
         </div>
-        <div className="text-center text-secondary text-size-sm">
-          * last ten tasks completed.
-        </div>
-        <ul className={`list-group ${style.ClosedTasksPage}`}>
+        {/* <div className={`style.TasksDiv`}> */}
+        <div className={style.TasksDiv}>
           {tasks}
-        </ul>
+        </div>
       </div>
-    )
+    );
 
   }
 }
 
-export default ClosedTasksPage
+export default ClosedTasksPage;
