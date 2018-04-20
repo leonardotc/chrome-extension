@@ -12,4 +12,4 @@ To learn more about Runrun.it go to [http://runrun.it/](http://runrun.it/)
 - List last completed tasks
 - Show task details
 
-by [https://github.com/brunosilvafreitas/runrunit-task-manager](https://github.com/brunosilvafreitas/runrunit-task-manager)
+Forked from [https://github.com/brunosilvafreitas/runrunit-task-manager](https://github.com/brunosilvafreitas/runrunit-task-manager)

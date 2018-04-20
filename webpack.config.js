@@ -5,7 +5,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   entry: {
-    popup: ['babel-polyfill', "./app/index.js"],
+    popup: ['babel-polyfill', "./app/popup.js"],
+    options: ['babel-polyfill', "./app/options.js"],
     background: "./app/background/index.js"
   },
   output: {
@@ -72,14 +73,14 @@ module.exports = {
     new HtmlWebpackPlugin({
       inject: true,
       filename: 'options.html',
-      chunks: ['popup'],
-      template: './app/static/options.html'
+      chunks: ['options'],
+      template: './app/static/index.html'
     }),
     new HtmlWebpackPlugin({
       inject: true,
       filename: 'popup.html',
       chunks: ['popup'],
-      template: './app/static/popup.html'
+      template: './app/static/index.html'
     }),
     new CopyWebpackPlugin([
       { from: './app/meta/manifest.json' },
