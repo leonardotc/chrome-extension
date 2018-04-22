@@ -3,6 +3,8 @@ import React from 'react'
 import style from './style.css'
 import request from '../AuthInterceptor'
 
+const baseUrl = 'https://secure.runrun.it'
+
 class OptionsPage extends React.Component {
   constructor (props) {
     super(props)
@@ -65,7 +67,7 @@ class OptionsPage extends React.Component {
       localStorage.setItem('trackedTask', '')
     }
 
-    request.get(`https://secure.runrun.it/api/v1.0/users/me`)
+    request.get(`${baseUrl}/api/v1.0/users/me`)
       .then(response => {
         localStorage.setItem('user', JSON.stringify(response.data))
         this.setState({
