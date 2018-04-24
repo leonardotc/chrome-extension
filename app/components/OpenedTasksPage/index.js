@@ -3,13 +3,13 @@ import { Link } from 'react-router'
 import moment from 'moment'
 import 'moment-duration-format'
 import style from './style.css'
-import request from '../AuthInterceptor'
+import request from '../../utils/auth_interceptor'
 import LoadingIcon from '../LoadingIcon'
 import PopupHeader from '../PopupHeader'
 import PopupNav from '../PopupNav'
 import TaskDetail from '../TaskDetail'
-
-const baseUrl = 'https://secure.runrun.it'
+import { baseUrl } from '../../config'
+import { localStorage } from '../../utils/globals'
 
 class OpenedTasksPage extends React.Component {
   constructor (props) {

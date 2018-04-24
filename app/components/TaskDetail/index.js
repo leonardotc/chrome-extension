@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
-
 import style from './style.css'
 
 class TaskDetail extends React.Component {

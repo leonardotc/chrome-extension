@@ -2,8 +2,8 @@ import React from 'react'
 import style from './style.css'
 import { Link } from 'react-router'
 import PropTypes from 'prop-types'
-
-const baseUrl = 'https://secure.runrun.it'
+import { baseUrl } from '../../config'
+import { localStorage } from '../../utils/globals'
 
 class PopupHeader extends React.Component {
   constructor (props) {

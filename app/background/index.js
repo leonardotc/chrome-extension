@@ -1,7 +1,7 @@
-import axios from 'axios'
 import moment from 'moment'
-
-const baseUrl = 'https://secure.runrun.it'
+import request from '../../utils/auth_interceptor'
+import { localStorage, chrome } from '../utils/globals'
+import { baseUrl } from '../config'
 
 JSON.isAJSONString = (object) => {
   try {
@@ -34,14 +34,7 @@ class RunrunTasks {
   }
 
   getHttpClient () {
-    const client = axios.create()
-    client.interceptors.request.use((config) => {
-      config.headers['App-Key'] = localStorage.getItem('appkey')
-      config.headers['User-Token'] = localStorage.getItem('usertoken')
-
-      return config
-    })
-    return client
+    return request
   }
 
   getUser () {

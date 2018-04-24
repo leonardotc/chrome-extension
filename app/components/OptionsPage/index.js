@@ -1,9 +1,9 @@
 /* globals localStorage */
 import React from 'react'
 import style from './style.css'
-import request from '../AuthInterceptor'
-
-const baseUrl = 'https://secure.runrun.it'
+import request from '../../utils/auth_interceptor'
+import { baseUrl } from '../../config'
+import { localStorage } from '../../utils/globals'
 
 class OptionsPage extends React.Component {
   constructor (props) {
